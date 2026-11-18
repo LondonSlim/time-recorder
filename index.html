@@ -13,96 +13,177 @@
 <link rel="manifest" href="manifest.json">
 <title>Time Recorder</title>
 <style>
+  /* ---------- mobile (light) ---------- */
   :root {
-    --accent: #990000; --accent-soft: #f6e9e9;
-    --active: #2e7d4f; --active-soft: #e5f2ea;
-    --done: #8a8f96; --done-soft: #eef0f2;
-    --ink: #1f2328; --muted: #6b7178; --line: #e3e5e8; --bg: #f7f7f5; --card: #fff;
-    --warn: #b26a00;
+    --bg: #f5f5f3; --surface: #ffffff; --surface2: #f1f2f4; --line: #e3e5e8;
+    --ink: #1f2328; --muted: #6b7178; --input: #ffffff; --input-line: #cfd3d8;
+    --accent: #990000; --accent-ink: #990000; --accent-soft: #f6e9e9;
+    --active: #2e7d4f; --active-soft: #e5f2ea; --done: #8a8f96; --done-soft: #eef0f2;
+    --warn: #b26a00; --shadow: none; --radius: 12px;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--ink);
-    font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-  body { padding-bottom: calc(70px + env(safe-area-inset-bottom)); }
-  .wrap { max-width: 640px; margin: 0 auto; padding: 12px 14px; }
-  header { display: flex; align-items: baseline; justify-content: space-between;
-    padding: calc(10px + env(safe-area-inset-top)) 14px 6px; max-width: 640px; margin: 0 auto; }
-  header h1 { font-size: 20px; margin: 0; color: var(--accent); letter-spacing: .2px; }
-  #status { font-size: 12px; color: var(--muted); }
-  #status.warn { color: var(--warn); }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-  label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
-  label:first-child { margin-top: 0; }
-  input, select, textarea { width: 100%; font: inherit; padding: 10px; border: 1px solid #cfd3d8;
-    border-radius: 8px; background: #fff; color: var(--ink); }
-  textarea { min-height: 60px; resize: vertical; }
-  .row { display: flex; gap: 10px; }
-  .row > * { flex: 1; min-width: 0; }
-  button { font: inherit; border: 0; border-radius: 10px; padding: 11px 14px; cursor: pointer;
-    background: #eceef0; color: var(--ink); }
+    font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Arial, sans-serif; }
+  button { font: inherit; border: 0; border-radius: 10px; padding: 10px 14px; cursor: pointer; background: var(--surface2); color: var(--ink); }
   button.primary { background: var(--accent); color: #fff; }
   button.go { background: var(--active); color: #fff; }
-  button.ghost { background: transparent; color: var(--accent); padding: 8px 4px; }
-  button.danger { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-  button.big { width: 100%; font-size: 20px; padding: 16px; margin-top: 14px; font-weight: 600; }
-  .clock { font-size: 52px; font-weight: 300; text-align: center; font-variant-numeric: tabular-nums; margin: 6px 0; }
-  .clock.paused { color: var(--warn); }
-  .center { text-align: center; }
-  .muted { color: var(--muted); font-size: 14px; }
+  button.ghost { background: transparent; color: var(--accent-ink); padding: 6px 4px; }
+  button.danger { background: transparent; color: var(--accent-ink); border: 1px solid var(--accent-ink); }
+  button.sm { padding: 6px 10px; font-size: 14px; }
+  button.big { font-size: 19px; padding: 15px; font-weight: 600; width: 100%; }
+  button.icon { background: transparent; font-size: 20px; padding: 4px 8px; color: var(--muted); }
+  input, select, textarea { width: 100%; font: inherit; padding: 9px 10px; border: 1px solid var(--input-line);
+    border-radius: 8px; background: var(--input); color: var(--ink); }
+  textarea { min-height: 54px; resize: vertical; }
+  label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; text-transform: uppercase; letter-spacing: .4px; }
+  .row { display: flex; gap: 10px; }
+  .row > * { flex: 1; min-width: 0; }
+  .muted { color: var(--muted); }
   .small { font-size: 13px; }
-  .job { display: flex; align-items: stretch; background: var(--card); border: 1px solid var(--line);
-    border-radius: 10px; margin-bottom: 8px; overflow: hidden; cursor: pointer; }
-  .job .bar { width: 6px; background: var(--active); flex: none; }
-  .job.complete .bar { background: var(--done); }
-  .job.complete { background: var(--done-soft); }
-  .job .body { flex: 1; padding: 10px 12px; display: flex; justify-content: space-between; gap: 10px; }
-  .job .name { font-weight: 600; }
-  .job .fig { text-align: right; white-space: nowrap; }
-  .job .fig b { display: block; }
+  .hidden { display: none !important; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
+
+  /* header + tabs */
+  header { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: calc(8px + env(safe-area-inset-top)) 14px 0; }
+  .hbar { display: flex; align-items: center; gap: 10px; }
+  .hbar h1 { font-size: 19px; margin: 0; color: var(--accent-ink); flex: 1; letter-spacing: .2px; }
+  #status { font-size: 12px; color: var(--muted); }
+  #status.warn { color: var(--warn); }
+  .tabs { display: flex; background: var(--surface2); border-radius: 10px; padding: 3px; margin: 8px 0 10px; }
+  .tabs button { flex: 1; background: transparent; padding: 8px 4px; font-size: 15px; color: var(--muted); border-radius: 8px; }
+  .tabs button.on { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+
+  .layout { padding: 0 14px calc(24px + env(safe-area-inset-bottom)); max-width: 680px; margin: 0 auto; }
+  body[data-tab="timer"] #side, body[data-tab="timer"] #panel,
+  body[data-tab="jobs"] #main, body[data-tab="jobs"] #panel,
+  body[data-tab="entries"] #side, body[data-tab="entries"] #main { display: none; }
+
+  /* jobs list */
+  .colhead { display: flex; align-items: center; justify-content: space-between; margin: 2px 0 10px; }
+  .colhead h3 { margin: 0; font-size: 15px; }
   .chips { display: flex; gap: 6px; margin-bottom: 10px; }
-  .chip { padding: 6px 12px; border-radius: 20px; background: #eceef0; font-size: 14px; }
-  .chip.on { background: var(--ink); color: #fff; }
-  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .stat { background: var(--bg); border-radius: 8px; padding: 8px 10px; }
-  .stat b { display: block; font-size: 20px; }
+  .chip { padding: 5px 12px; border-radius: 20px; background: var(--surface2); font-size: 13px; cursor: pointer; color: var(--muted); }
+  .chip.on { background: var(--ink); color: var(--bg); }
+  .jobitem { display: flex; align-items: stretch; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; margin-bottom: 8px; overflow: hidden; cursor: pointer; }
+  .jobitem .bar { width: 5px; background: var(--active); flex: none; }
+  .jobitem.complete .bar { background: var(--done); }
+  .jobitem.complete { opacity: .8; }
+  .jobitem.all .bar { background: transparent; }
+  .jobitem .body { flex: 1; padding: 9px 12px; display: flex; justify-content: space-between; gap: 10px; }
+  .jobitem .name { font-weight: 600; }
+  .jobitem .fig { text-align: right; white-space: nowrap; }
+  .jobitem .fig b { display: block; }
+  .jobitem.on { border-color: var(--accent-ink); box-shadow: 0 0 0 1px var(--accent-ink) inset; }
+
+  /* timer */
+  .clock { font-size: 52px; font-weight: 300; text-align: center; font-variant-numeric: tabular-nums; margin: 4px 0; letter-spacing: 1px; }
+  .clock.paused { color: var(--warn); }
+  .timer-run { text-align: center; }
+  .timer-run h2 { margin: 2px 0 0; font-size: 19px; }
+  .inline-time { width: auto; padding: 3px 6px; font-size: 14px; display: inline-block; }
+  .taskchange { text-align: left; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+
+  /* dashboard */
+  .jobhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .jobhead h2 { margin: 0; font-size: 21px; }
+  .pill { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px; background: var(--active-soft); color: var(--active); }
+  .pill.complete { background: var(--done-soft); color: var(--done); }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .stat { background: var(--surface2); border-radius: 10px; padding: 10px 12px; }
+  .stat b { display: block; font-size: 21px; font-variant-numeric: tabular-nums; }
   .stat span { font-size: 12px; color: var(--muted); }
+  .actions { display: flex; gap: 8px; margin-top: 14px; align-items: center; flex-wrap: wrap; }
+  .actions .spacer { flex: 1; }
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; border-bottom: 1px solid var(--line); padding: 4px 4px; }
+  th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; border-bottom: 1px solid var(--line); padding: 4px; }
   td { padding: 6px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
   td.r, th.r { text-align: right; white-space: nowrap; }
-  tr.click { cursor: pointer; }
-  .pill { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 10px;
-    background: var(--active-soft); color: var(--active); }
-  .pill.complete { background: var(--done-soft); color: var(--done); }
-  h2 { font-size: 18px; margin: 0 0 4px; }
-  h3 { font-size: 15px; margin: 4px 0 8px; }
-  nav { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--line);
-    display: flex; justify-content: center; padding-bottom: env(safe-area-inset-bottom); z-index: 5; }
-  nav div { display: flex; max-width: 640px; width: 100%; }
-  nav button { flex: 1; background: none; border-radius: 0; padding: 12px 4px; color: var(--muted); font-size: 14px; }
-  nav button.on { color: var(--accent); font-weight: 600; }
-  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 10; overflow-y: auto;
-    padding: calc(20px + env(safe-area-inset-top)) 10px 40px; }
-  .modal { max-width: 560px; margin: 0 auto; background: #fff; border-radius: 14px; padding: 16px; }
-  .actions { display: flex; gap: 10px; margin-top: 16px; align-items: center; }
-  .actions .spacer { flex: 1; }
-  .calc { margin-top: 12px; padding: 10px; background: var(--bg); border-radius: 8px; font-size: 14px; }
-  .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(80px + env(safe-area-inset-bottom));
-    background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 20px; font-size: 14px; z-index: 20;
+  .timer-idle .big { margin-top: 14px; }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tile { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--active); border-radius: 10px; padding: 10px 12px; cursor: pointer; }
+  .tile b { display: block; font-size: 18px; margin-top: 4px; }
+
+  /* entries */
+  .day { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: .4px; margin: 14px 2px 6px; }
+  .entry { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; margin-bottom: 6px;
+    cursor: pointer; display: flex; gap: 10px; }
+  .entry:hover { border-color: var(--muted); }
+  .entry .t { white-space: nowrap; font-variant-numeric: tabular-nums; font-size: 14px; min-width: 92px; }
+  .entry .d { flex: 1; min-width: 0; }
+  .entry .d div { overflow: hidden; text-overflow: ellipsis; }
+  .entry .v { text-align: right; white-space: nowrap; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .entry.live { border-color: var(--active); border-style: dashed; cursor: default; }
+  .entry .job { font-size: 12px; color: var(--muted); }
+  .editor { background: var(--surface); border: 1px solid var(--accent-ink); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+  .calc { margin-top: 10px; padding: 9px 10px; background: var(--surface2); border-radius: 8px; font-size: 14px; }
+  .splitbox { margin-top: 10px; padding: 10px; border: 1px dashed var(--line); border-radius: 8px; }
+
+  /* modal + toast */
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; overflow-y: auto;
+    padding: calc(24px + env(safe-area-inset-top)) 10px 40px; }
+  .modal { max-width: 520px; margin: 0 auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  .modal h2 { margin: 0 0 4px; font-size: 19px; }
+  .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(24px + env(safe-area-inset-bottom));
+    background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 20px; font-size: 14px; z-index: 30;
     max-width: 90%; text-align: center; }
-  .hidden { display: none !important; }
-  .inline-time { width: auto; padding: 4px 6px; font-size: 14px; display: inline-block; }
+
+  /* ---------- desktop (dark, three columns) ---------- */
+  @media (min-width: 1000px) {
+    :root {
+      --bg: #0e1014; --surface: #171a20; --surface2: #1f232b; --line: #2a2f39;
+      --ink: #e9ebef; --muted: #9098a5; --input: #12151a; --input-line: #323846;
+      --accent: #b3202c; --accent-ink: #e25563; --accent-soft: #2a1619;
+      --active: #34c47c; --active-soft: #12291d; --done: #6f7683; --done-soft: #20242b;
+      color-scheme: dark;
+      --warn: #f0a33a; --shadow: 0 1px 0 rgba(255,255,255,.03), 0 8px 24px rgba(0,0,0,.35); --radius: 16px;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    header { padding: 14px 24px; border-bottom: 1px solid var(--line); background: var(--bg); }
+    .hbar h1 { font-size: 18px; letter-spacing: .5px; }
+    .tabs { display: none; }
+    .layout { display: grid; grid-template-columns: 290px minmax(0, 1fr) 440px; max-width: none; padding: 0; height: calc(100vh - 57px); }
+    .layout > * { display: block !important; overflow-y: auto; padding: 20px; }
+    #side { border-right: 1px solid var(--line); background: #111318; }
+    #panel { border-left: 1px solid var(--line); background: #111318; }
+    #main { padding: 24px 32px; }
+    .jobitem { background: transparent; border-color: transparent; }
+    .jobitem:hover { background: var(--surface); }
+    .jobitem.on { background: var(--surface); border-color: var(--line); box-shadow: none; }
+    .jobitem.on .name { color: #fff; }
+    .card { padding: 20px; }
+    .clock { font-size: 76px; font-weight: 200; }
+    .timer-run h2 { font-size: 22px; }
+    .stats { grid-template-columns: repeat(4, 1fr); }
+    .stat { padding: 14px 16px; border: 1px solid var(--line); }
+    .stat b { font-size: 26px; font-weight: 500; }
+    .tiles { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    .timer-idle { display: grid; grid-template-columns: 1fr 1fr auto; gap: 14px; align-items: end; }
+    .timer-idle label { margin-top: 0; }
+    .timer-idle .big { width: auto; padding: 11px 34px; }
+    .timer-idle { align-items: start; } .timer-idle .big { margin-top: 21px; }
+    .entry { background: var(--surface); }
+    button { transition: filter .15s; }
+    button:hover { filter: brightness(1.15); }
+    ::-webkit-scrollbar { width: 10px; } ::-webkit-scrollbar-thumb { background: #2a2f39; border-radius: 6px; }
+  }
 </style>
 </head>
-<body>
-<header><h1>Time Recorder</h1><span id="status"></span></header>
-<div class="wrap" id="view"></div>
-<nav><div>
-  <button data-nav="timer">Timer</button>
-  <button data-nav="jobs">Jobs</button>
-  <button data-nav="add">+ Time</button>
-  <button data-nav="settings">Settings</button>
-</div></nav>
+<body data-tab="timer">
+<header>
+  <div class="hbar"><h1>Time Recorder</h1><span id="status"></span><button class="icon" title="Settings" onclick="settingsForm()">⚙︎</button></div>
+  <div class="tabs">
+    <button data-tab="timer" onclick="setTab('timer')">Timer</button>
+    <button data-tab="jobs" onclick="setTab('jobs')">Jobs</button>
+    <button data-tab="entries" onclick="setTab('entries')">Entries</button>
+  </div>
+</header>
+<div class="layout">
+  <aside id="side"></aside>
+  <main id="main"></main>
+  <section id="panel"></section>
+</div>
 <div id="modal"></div>
 
 <script>
@@ -117,8 +198,10 @@ let cfg = ls.get('tr_cfg', { url: '', key: '' });
 let data = ls.get('tr_data', { jobs: [], sessions: [], running: null, defaultRate: 65 });
 let queue = ls.get('tr_queue', []);
 let pick = ls.get('tr_pick', { jobId: '', task: '', newTask: '' });
-let view = ls.get('tr_view', 'timer');
+let sel = ls.get('tr_sel', '');
+let tab = ls.get('tr_tab', 'timer');
 let jobFilter = ls.get('tr_filter', 'active');
+let editId = null, splitOpen = false, taskChange = false;
 
 const saveData = () => ls.set('tr_data', data);
 const saveQueue = () => ls.set('tr_queue', queue);
@@ -135,7 +218,9 @@ const hhmm = d => pad(d.getHours()) + ':' + pad(d.getMinutes());
 const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 const dayLabel = d => d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 const jobById = id => data.jobs.find(j => j.id === id);
-const sameDay = (a, b) => ymd(a) === ymd(b);
+const isDesk = () => matchMedia('(min-width: 1000px)').matches;
+const byStart = (a, b) => new Date(a.start) - new Date(b.start);
+const activeJobs = () => data.jobs.filter(j => j.status !== 'Complete').sort((a, b) => a.name.localeCompare(b.name));
 
 function derive(s) {
   const worked = Math.max(0, Math.round((new Date(s.end) - new Date(s.start)) / 60000 - (Number(s.pausedMin) || 0)));
@@ -145,20 +230,28 @@ function derive(s) {
 
 function tasksFor(jobId) {
   const seen = new Set(), out = [];
-  data.sessions.filter(s => s.jobId === jobId)
-    .sort((a, b) => new Date(b.start) - new Date(a.start))
+  data.sessions.filter(s => s.jobId === jobId).sort((a, b) => byStart(b, a))
     .forEach(s => { if (s.task && !seen.has(s.task)) { seen.add(s.task); out.push(s.task); } });
+  if (data.running && data.running.jobId === jobId && data.running.task && !seen.has(data.running.task)) out.unshift(data.running.task);
   return out;
 }
 
+function taskOptions(jobId, selected) {
+  const tasks = tasksFor(jobId);
+  if (selected && selected !== '__new' && !tasks.includes(selected)) tasks.unshift(selected);
+  return tasks.map(t => `<option ${t === selected ? 'selected' : ''}>${esc(t)}</option>`).join('') +
+    `<option value="__new" ${selected === '__new' || !tasks.length ? 'selected' : ''}>+ New task…</option>`;
+}
+function readTask(selId, newId) {
+  const v = $(selId).value;
+  const t = v === '__new' ? $(newId).value.trim() : v;
+  return t || 'General';
+}
+
 function totals(jobId) {
-  const ss = data.sessions.filter(s => s.jobId === jobId);
-  return {
-    n: ss.length,
-    worked: ss.reduce((a, s) => a + s.workedMin, 0),
-    charged: ss.reduce((a, s) => a + s.chargedH, 0),
-    charge: ss.reduce((a, s) => a + s.charge, 0)
-  };
+  const ss = data.sessions.filter(s => !jobId || s.jobId === jobId);
+  return { n: ss.length, worked: ss.reduce((a, s) => a + s.workedMin, 0),
+    charged: ss.reduce((a, s) => a + s.chargedH, 0), charge: ss.reduce((a, s) => a + s.charge, 0) };
 }
 
 function toast(msg) {
@@ -166,7 +259,6 @@ function toast(msg) {
   const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
   document.body.appendChild(t); setTimeout(() => t.remove(), 3500);
 }
-
 function setStatus(msg, cls) { const s = $('#status'); s.textContent = msg || ''; s.className = cls || ''; }
 
 // ---------- sync ----------
@@ -192,7 +284,7 @@ function applyLocal(op) {
 
 function commit(...ops) {
   ops.forEach(op => { applyLocal(op); queue.push(op); });
-  saveQueue(); saveData(); render(); sync();
+  saveQueue(); saveData(); render(true); sync();
 }
 
 let syncing = false, again = false;
@@ -218,7 +310,7 @@ async function sync() {
     if (String(e.message).includes('key')) toast(e.message);
   }
   syncing = false;
-  if (!$('#modal').innerHTML) render();
+  render();
   if (again) { again = false; sync(); }
 }
 
@@ -228,16 +320,19 @@ function elapsedMs(r, now) {
   const paused = (r.pausedMs || 0) + (r.pauseStart ? now - new Date(r.pauseStart) : 0);
   return Math.max(0, now - new Date(r.start) - paused);
 }
-function fmtClock(ms) {
-  const s = Math.floor(ms / 1000);
-  return Math.floor(s / 3600) + ':' + pad(Math.floor(s / 60) % 60) + ':' + pad(s % 60);
+const fmtClock = ms => { const s = Math.floor(ms / 1000); return Math.floor(s / 3600) + ':' + pad(Math.floor(s / 60) % 60) + ':' + pad(s % 60); };
+
+function runningToSession(r) {
+  const end = r.pauseStart ? new Date(r.pauseStart) : new Date();
+  const job = jobById(r.jobId);
+  return { id: uid('s'), jobId: r.jobId, task: r.task, start: r.start, end: end.toISOString(),
+    pausedMin: Math.round((r.pausedMs || 0) / 6000) / 10, rate: job ? job.rate : data.defaultRate, notes: '' };
 }
 
 function startTimer() {
   const jobId = $('#tJob').value;
   if (!jobId) return toast('Choose a job first');
-  let task = $('#tTask').value === '__new' ? $('#tNew').value.trim() : $('#tTask').value;
-  if (!task) task = 'General';
+  const task = readTask('#tTask', '#tNew');
   pick = { jobId, task, newTask: '' }; ls.set('tr_pick', pick);
   commit({ type: 'setRunning', running: { jobId, task, start: new Date().toISOString(), pausedMs: 0, pauseStart: null } });
 }
@@ -250,20 +345,16 @@ function pauseTimer() {
 }
 
 function stopTimer() {
-  const r = data.running; if (!r) return;
-  const end = r.pauseStart ? new Date(r.pauseStart) : new Date();
-  const job = jobById(r.jobId);
-  const s = {
-    id: uid('s'), jobId: r.jobId, task: r.task, start: r.start, end: end.toISOString(),
-    pausedMin: Math.round((r.pausedMs || 0) / 6000) / 10, rate: job ? job.rate : data.defaultRate, notes: ''
-  };
-  const d = derive(s);
+  if (!data.running) return;
+  const s = runningToSession(data.running), d = derive(s);
+  taskChange = false;
+  if (elapsedMs(data.running) < 60000) { commit({ type: 'setRunning', running: null }); return toast('Under a minute, so not saved'); }
   commit({ type: 'saveSession', session: s }, { type: 'setRunning', running: null });
   toast('Saved ' + hm(d.workedMin) + ' → ' + hrs(d.chargedH) + ' · ' + money(d.charge));
 }
 
 function discardTimer() {
-  if (confirm('Discard this timer without saving?')) commit({ type: 'setRunning', running: null });
+  if (confirm('Discard this timer without saving?')) { taskChange = false; commit({ type: 'setRunning', running: null }); }
 }
 
 function adjustStart(val) {
@@ -276,146 +367,169 @@ function adjustStart(val) {
   commit({ type: 'setRunning', running: r });
 }
 
-// ---------- views ----------
-function render() {
-  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.nav === view.split(':')[0] || (b.dataset.nav === 'jobs' && view.startsWith('job:'))));
-  const v = $('#view');
-  if (view === 'timer') v.innerHTML = timerView();
-  else if (view === 'jobs') v.innerHTML = jobsView();
-  else if (view.startsWith('job:')) v.innerHTML = jobView(view.slice(4));
-  else if (view === 'settings') v.innerHTML = settingsView();
-  else { view = 'timer'; return render(); }
+function changeTask(mode) {
+  const r = data.running; if (!r) return;
+  const task = readTask('#cTask', '#cNew');
+  taskChange = false;
+  if (mode === 'now' && elapsedMs(r) < 60000) mode = 'whole';   // under a minute: just rename it
+  if (mode === 'now') {
+    // close the current entry and carry on timing under the new task
+    const s = runningToSession(r);
+    commit({ type: 'saveSession', session: s },
+      { type: 'setRunning', running: { jobId: r.jobId, task, start: new Date().toISOString(), pausedMs: 0, pauseStart: null } });
+    toast('Switched to ' + task);
+  } else {
+    commit({ type: 'setRunning', running: Object.assign({}, r, { task }) });
+  }
+  pick.task = task; ls.set('tr_pick', pick);
+}
+
+// ---------- navigation ----------
+function setTab(t) {
+  tab = t; ls.set('tr_tab', t); document.body.dataset.tab = t;
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  render();
+  if (t === 'entries' && !isDesk()) setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 0);
+  else window.scrollTo(0, 0);
+}
+
+function selectJob(id) {
+  sel = id; ls.set('tr_sel', id); editId = null; splitOpen = false;
+  const j = jobById(id);
+  if (j && j.status !== 'Complete' && !data.running) { pick.jobId = id; pick.task = tasksFor(id)[0] || '__new'; ls.set('tr_pick', pick); }
+  if (!isDesk() && tab === 'jobs') setTab('timer'); else render();
+}
+
+// ---------- render ----------
+function render(force) {
+  if ($('#modal').innerHTML) return;
+  $('#side').innerHTML = sideHTML();
+  $('#main').innerHTML = mainHTML();
+  if (!editId || force === 'panel') renderPanel();
   tick();
 }
 
-function go(v) { view = v; ls.set('tr_view', v); render(); window.scrollTo(0, 0); }
-
-function taskOptions(jobId, selected) {
-  const tasks = tasksFor(jobId);
-  let html = tasks.map(t => `<option ${t === selected ? 'selected' : ''}>${esc(t)}</option>`).join('');
-  html += `<option value="__new" ${(selected === '__new' || !tasks.includes(selected)) ? 'selected' : ''}>+ New task…</option>`;
-  return html;
+function renderPanel() {
+  const p = $('#panel');
+  p.innerHTML = panelHTML();
+  if (editId) {
+    const ed = $('#editor'); if (ed) ed.scrollIntoView({ block: 'nearest' });
+    if ($('#eTask')) eTaskChanged(), eCalc();
+  } else if (isDesk()) p.scrollTop = p.scrollHeight;
 }
 
-function timerView() {
-  const r = data.running;
-  let html = '';
-  if (r) {
-    const job = jobById(r.jobId);
-    html += `<div class="card center">
-      <div class="muted">${esc(job ? job.name : 'Unknown job')}</div>
-      <h2>${esc(r.task)}</h2>
-      <div class="clock ${r.pauseStart ? 'paused' : ''}" id="clock">${fmtClock(elapsedMs(r))}</div>
-      <div class="muted" id="clockSub"></div>
-      <div class="row" style="margin-top:14px">
-        <button class="big ${r.pauseStart ? 'go' : ''}" style="margin:0" onclick="pauseTimer()">${r.pauseStart ? 'Resume' : 'Pause'}</button>
-        <button class="big primary" style="margin:0" onclick="stopTimer()">Stop</button>
-      </div>
-      <div style="margin-top:12px" class="muted small">
-        Started <input type="time" class="inline-time" value="${hhmm(new Date(r.start))}" onchange="adjustStart(this.value)">
-        &nbsp; <button class="ghost small" onclick="discardTimer()">Discard</button>
-      </div>
-    </div>`;
-  } else {
-    const active = data.jobs.filter(j => j.status !== 'Complete');
-    if (!active.length) {
-      html += `<div class="card center"><p class="muted">No active jobs yet.</p>
-        <button class="primary" onclick="jobForm()">+ New job</button></div>`;
-    } else {
-      if (!active.some(j => j.id === pick.jobId)) { pick.jobId = active[0].id; pick.task = ''; }
-      const tasks = tasksFor(pick.jobId);
-      if (pick.task !== '__new' && !tasks.includes(pick.task)) pick.task = tasks[0] || '__new';
-      const isNew = pick.task === '__new';
-      html += `<div class="card">
-        <label>Job</label>
-        <select id="tJob" onchange="pickJob(this.value)">${active.map(j => `<option value="${esc(j.id)}" ${j.id === pick.jobId ? 'selected' : ''}>${esc(j.name)}</option>`).join('')}</select>
-        <label>Task</label>
-        <select id="tTask" onchange="pickTask(this.value)">${taskOptions(pick.jobId, pick.task)}</select>
-        <input id="tNew" class="${isNew ? '' : 'hidden'}" style="margin-top:8px" placeholder="New task" value="${esc(pick.newTask || '')}" oninput="pick.newTask=this.value;ls.set('tr_pick',pick)">
-        <button class="big go" onclick="startTimer()">Start</button>
-      </div>`;
-    }
-  }
-  // today
-  const today = data.sessions.filter(s => sameDay(new Date(s.start), new Date()))
-    .sort((a, b) => new Date(a.start) - new Date(b.start));
-  if (today.length) {
-    const tw = today.reduce((a, s) => a + s.workedMin, 0), tc = today.reduce((a, s) => a + s.chargedH, 0);
-    html += `<div class="card"><h3>Today · ${hm(tw)} worked · ${hrs(tc)} charged</h3><table>
-      ${today.map(s => `<tr class="click" onclick="sessionForm('${s.id}')"><td>${hhmm(new Date(s.start))}–${hhmm(new Date(s.end))}</td>
-        <td>${esc((jobById(s.jobId) || {}).name || '')}<div class="muted small">${esc(s.task)}</div></td>
-        <td class="r">${hrs(s.chargedH)}</td></tr>`).join('')}</table></div>`;
-  }
-  return html;
-}
-
-function pickJob(id) { pick.jobId = id; const t = tasksFor(id); pick.task = t[0] || '__new'; pick.newTask = ''; ls.set('tr_pick', pick); render(); }
-function pickTask(v) { pick.task = v; ls.set('tr_pick', pick); $('#tNew').classList.toggle('hidden', v !== '__new'); if (v === '__new') $('#tNew').focus(); }
-
-function jobsView() {
+function sideHTML() {
   let jobs = data.jobs.slice();
   if (jobFilter === 'active') jobs = jobs.filter(j => j.status !== 'Complete');
   jobs.sort((a, b) => (a.status === 'Complete') - (b.status === 'Complete') || a.name.localeCompare(b.name));
-  let html = `<div class="row" style="align-items:center;margin-bottom:10px">
-    <div class="chips" style="margin:0">
+  const all = totals('');
+  return `<div class="colhead"><h3>Jobs</h3><button class="primary sm" onclick="jobForm()">+ New job</button></div>
+    <div class="chips">
       <span class="chip ${jobFilter === 'active' ? 'on' : ''}" onclick="setFilter('active')">Active</span>
       <span class="chip ${jobFilter === 'all' ? 'on' : ''}" onclick="setFilter('all')">All</span>
     </div>
-    <div style="text-align:right"><button class="primary" onclick="jobForm()">+ New job</button></div></div>`;
-  if (!jobs.length) html += '<p class="muted center">No jobs to show.</p>';
-  html += jobs.map(j => {
-    const t = totals(j.id);
-    return `<div class="job ${j.status === 'Complete' ? 'complete' : ''}" onclick="go('job:${j.id}')">
+    <div class="jobitem all ${!sel ? 'on' : ''}" onclick="selectJob('')"><div class="bar"></div><div class="body">
+      <div><div class="name">All jobs</div><div class="muted small">Recent entries</div></div>
+      <div class="fig"><b>${money(all.charge)}</b><span class="muted small">${hrs(all.charged)}</span></div></div></div>` +
+    (jobs.length ? '' : '<p class="muted small">No jobs to show.</p>') +
+    jobs.map(j => { const t = totals(j.id); return `
+    <div class="jobitem ${j.status === 'Complete' ? 'complete' : ''} ${sel === j.id ? 'on' : ''}" onclick="selectJob('${j.id}')">
       <div class="bar"></div><div class="body">
         <div><div class="name">${esc(j.name)}</div><div class="muted small">${esc(j.client || '')}${j.client ? ' · ' : ''}${money(j.rate)}/h</div></div>
         <div class="fig"><b>${money(t.charge)}</b><span class="muted small">${hrs(t.charged)}</span></div>
-      </div></div>`;
-  }).join('');
-  return html;
+      </div></div>`; }).join('');
 }
 function setFilter(f) { jobFilter = f; ls.set('tr_filter', f); render(); }
 
-function jobView(id) {
-  const j = jobById(id);
-  if (!j) { setTimeout(() => go('jobs')); return ''; }
-  const t = totals(id);
-  const ss = data.sessions.filter(s => s.jobId === id).sort((a, b) => new Date(b.start) - new Date(a.start));
+function mainHTML() { return timerHTML() + (sel && jobById(sel) ? jobDashHTML(sel) : overviewHTML()); }
+
+function timerHTML() {
+  const r = data.running;
+  if (r) {
+    const job = jobById(r.jobId);
+    return `<div class="card timer-run">
+      <div class="muted">${esc(job ? job.name : 'Unknown job')}</div>
+      <h2>${esc(r.task)} <button class="ghost sm" onclick="taskChange=!taskChange;render()">Change task</button></h2>
+      <div class="clock ${r.pauseStart ? 'paused' : ''}" id="clock">${fmtClock(elapsedMs(r))}</div>
+      <div class="muted small" id="clockSub">&nbsp;</div>
+      <div class="row" style="margin-top:14px;max-width:460px;margin-left:auto;margin-right:auto">
+        <button class="big ${r.pauseStart ? 'go' : ''}" onclick="pauseTimer()">${r.pauseStart ? 'Resume' : 'Pause'}</button>
+        <button class="big primary" onclick="stopTimer()">Stop</button>
+      </div>
+      <div style="margin-top:12px" class="muted small">
+        Started <input type="time" class="inline-time" value="${hhmm(new Date(r.start))}" onchange="adjustStart(this.value)">
+        &nbsp; <button class="ghost sm" onclick="discardTimer()">Discard</button>
+      </div>
+      ${taskChange ? `<div class="taskchange">
+        <label>New task</label>
+        <select id="cTask" onchange="$('#cNew').classList.toggle('hidden', this.value!=='__new')">${taskOptions(r.jobId, '__new')}</select>
+        <input id="cNew" style="margin-top:8px" placeholder="New task">
+        <div class="actions">
+          <button class="go sm" onclick="changeTask('now')">Switch from now</button>
+          <button class="sm" onclick="changeTask('whole')">Rename whole session</button>
+          <span class="spacer"></span><button class="ghost sm" onclick="taskChange=false;render()">Cancel</button>
+        </div>
+        <div class="muted small" style="margin-top:6px">"Switch from now" saves the time so far as one entry and carries on timing under the new task.</div>
+      </div>` : ''}
+    </div>`;
+  }
+  const active = activeJobs();
+  if (!active.length) return `<div class="card" style="text-align:center"><p class="muted">No active jobs yet.</p>
+    <button class="primary" onclick="jobForm()">+ New job</button></div>`;
+  if (!active.some(j => j.id === pick.jobId)) { pick.jobId = active[0].id; pick.task = ''; }
+  const tasks = tasksFor(pick.jobId);
+  if (pick.task !== '__new' && !tasks.includes(pick.task)) pick.task = tasks[0] || '__new';
+  return `<div class="card"><div class="timer-idle">
+      <div><label>Job</label><select id="tJob" onchange="pickJob(this.value)">${active.map(j => `<option value="${esc(j.id)}" ${j.id === pick.jobId ? 'selected' : ''}>${esc(j.name)}</option>`).join('')}</select></div>
+      <div><label>Task</label><select id="tTask" onchange="pickTask(this.value)">${taskOptions(pick.jobId, pick.task)}</select>
+        <input id="tNew" class="${pick.task === '__new' ? '' : 'hidden'}" style="margin-top:8px" placeholder="New task" value="${esc(pick.newTask || '')}" oninput="pick.newTask=this.value;ls.set('tr_pick',pick)"></div>
+      <div><button class="big go" onclick="startTimer()">Start</button></div>
+    </div></div>`;
+}
+function pickJob(id) { pick.jobId = id; pick.task = tasksFor(id)[0] || '__new'; pick.newTask = ''; ls.set('tr_pick', pick); sel = id; ls.set('tr_sel', id); editId = null; render(true); }
+function pickTask(v) { pick.task = v; ls.set('tr_pick', pick); $('#tNew').classList.toggle('hidden', v !== '__new'); if (v === '__new') $('#tNew').focus(); }
+
+function jobDashHTML(id) {
+  const j = jobById(id), t = totals(id), complete = j.status === 'Complete';
   const byTask = {};
-  ss.forEach(s => { const k = s.task || '—'; byTask[k] = byTask[k] || { h: 0, c: 0 }; byTask[k].h += s.chargedH; byTask[k].c += s.charge; });
-  const complete = j.status === 'Complete';
-  let html = `<button class="ghost" onclick="go('jobs')">‹ Jobs</button>
-  <div class="card" style="border-left:6px solid ${complete ? 'var(--done)' : 'var(--active)'}">
-    <div class="row" style="align-items:flex-start"><div style="flex:3">
+  data.sessions.filter(s => s.jobId === id).sort(byStart).forEach(s => {
+    const k = s.task || '—'; byTask[k] = byTask[k] || { h: 0, c: 0, n: 0 }; byTask[k].h += s.chargedH; byTask[k].c += s.charge; byTask[k].n++; });
+  return `<div class="card">
+    <div class="jobhead"><div>
       <h2>${esc(j.name)}</h2>
       <div class="muted">${esc(j.client || '')}</div>
-      <div class="muted small">${money(j.rate)}/h · <span class="pill ${complete ? 'complete' : ''}">${complete ? 'Complete' : 'Active'}</span></div>
+      <div class="muted small" style="margin-top:4px">${money(j.rate)}/h · <span class="pill ${complete ? 'complete' : ''}">${complete ? 'Complete' : 'Active'}</span></div>
       ${j.notes ? `<div class="small" style="margin-top:6px">${esc(j.notes)}</div>` : ''}
-    </div><div style="text-align:right"><button onclick="jobForm('${j.id}')">Edit</button></div></div>
-    <div class="stats" style="margin-top:12px">
+    </div><button class="sm" onclick="jobForm('${j.id}')">Edit job</button></div>
+    <div class="stats">
       <div class="stat"><b>${money(t.charge)}</b><span>Total charge</span></div>
       <div class="stat"><b>${hrs(t.charged)}</b><span>Charged (15 min)</span></div>
       <div class="stat"><b>${hm(t.worked)}</b><span>Actual time worked</span></div>
-      <div class="stat"><b>${t.n}</b><span>Sessions</span></div>
+      <div class="stat"><b>${t.n}</b><span>Entries</span></div>
     </div>
     <div class="actions">
-      <button class="go" onclick="sessionForm(null,'${j.id}')">+ Add time</button>
+      <button class="go sm" onclick="newEntry()">+ Add entry</button>
+      <button class="sm" onclick="setTab('entries')" style="${isDesk() ? 'display:none' : ''}">View entries</button>
       <span class="spacer"></span>
-      <button onclick="toggleStatus('${j.id}')">${complete ? 'Reopen' : 'Mark complete'}</button>
+      <button class="sm" onclick="toggleStatus('${j.id}')">${complete ? 'Reopen' : 'Mark complete'}</button>
     </div>
-  </div>`;
-  if (Object.keys(byTask).length > 1) {
-    html += `<div class="card"><h3>By task</h3><table><tr><th>Task</th><th class="r">Hours</th><th class="r">Charge</th></tr>
-      ${Object.entries(byTask).map(([k, v]) => `<tr><td>${esc(k)}</td><td class="r">${hrs(v.h)}</td><td class="r">${money(v.c)}</td></tr>`).join('')}</table></div>`;
-  }
-  html += `<div class="card"><h3>Sessions</h3>`;
-  if (!ss.length) html += '<p class="muted">No time recorded yet.</p>';
-  else html += `<table><tr><th>Date</th><th>Task</th><th class="r">Hours</th><th class="r">£</th></tr>
-    ${ss.map(s => { const a = new Date(s.start), b = new Date(s.end); return `<tr class="click" onclick="sessionForm('${s.id}')">
-      <td>${a.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}<div class="muted small">${hhmm(a)}–${hhmm(b)}</div></td>
-      <td>${esc(s.task)}<div class="muted small">${hm(s.workedMin)}${s.pausedMin ? ' (paused ' + Math.round(s.pausedMin) + 'm)' : ''}</div></td>
-      <td class="r">${hrs(s.chargedH)}</td><td class="r">${money(s.charge)}</td></tr>`; }).join('')}</table>`;
-  html += '</div>';
-  return html;
+  </div>
+  ${Object.keys(byTask).length ? `<div class="card"><h3 style="margin:0 0 8px;font-size:15px">By task</h3><table>
+    <tr><th>Task</th><th class="r">Entries</th><th class="r">Hours</th><th class="r">Charge</th></tr>
+    ${Object.entries(byTask).map(([k, v]) => `<tr><td>${esc(k)}</td><td class="r">${v.n}</td><td class="r">${hrs(v.h)}</td><td class="r">${money(v.c)}</td></tr>`).join('')}
+    <tr><td><b>Total</b></td><td class="r"><b>${t.n}</b></td><td class="r"><b>${hrs(t.charged)}</b></td><td class="r"><b>${money(t.charge)}</b></td></tr>
+  </table></div>` : ''}`;
+}
+
+function overviewHTML() {
+  const act = activeJobs();
+  if (!act.length) return '';
+  const tw = data.sessions.filter(s => { const d = new Date(s.start), n = new Date(); return (n - d) < 7 * 864e5; });
+  return `<div class="card"><div class="colhead"><h3>Active jobs</h3>
+      <span class="muted small">Last 7 days: ${hrs(tw.reduce((a, s) => a + s.chargedH, 0))} · ${money(tw.reduce((a, s) => a + s.charge, 0))}</span></div>
+    <div class="tiles">${act.map(j => { const t = totals(j.id); return `<div class="tile" onclick="selectJob('${j.id}')">
+      <div class="name">${esc(j.name)}</div><div class="muted small">${esc(j.client || '')}</div>
+      <b>${money(t.charge)}</b><span class="muted small">${hrs(t.charged)} · ${t.n} entries</span></div>`; }).join('')}</div></div>`;
 }
 
 function toggleStatus(id) {
@@ -424,31 +538,161 @@ function toggleStatus(id) {
   commit({ type: 'saveJob', job: j });
 }
 
-function settingsView() {
-  return `<div class="card">
-    <label>Apps Script web app URL</label><input id="sUrl" value="${esc(cfg.url)}" placeholder="https://script.google.com/macros/s/…/exec">
-    <label>Key</label><input id="sKey" value="${esc(cfg.key)}" autocomplete="off">
-    <label>Default hourly rate for new jobs (£)</label><input id="sRate" type="number" step="0.01" inputmode="decimal" value="${data.defaultRate}">
-    <div class="actions"><button class="primary" onclick="saveSettings()">Save</button><button onclick="sync()">Sync now</button></div>
-  </div>
-  <div class="card small muted">
-    ${queue.length ? `<p style="color:var(--warn)">${queue.length} change(s) waiting to be sent.</p>` : ''}
-    <p>Data is kept in the <a href="${SHEET_URL}" target="_blank">Time Recorder sheet</a> on Google Drive.
-    Durations are charged in 15-minute blocks, rounded up per session. Paused time is not counted.</p>
+// ---------- entries panel ----------
+function panelHTML() {
+  const j = sel ? jobById(sel) : null;
+  let list = data.sessions.filter(s => !j || s.jobId === j.id).sort(byStart);
+  if (!j) list = list.slice(-60);
+  let html = `<div class="colhead"><div><h3>${j ? esc(j.name) : 'Recent entries'}</h3>
+      ${j && !isDesk() ? `<span class="chip" onclick="selectJob('')">Show all jobs</span>` : ''}</div>
+    <button class="go sm" onclick="newEntry()">+ Add entry</button></div>`;
+  if (!list.length && !data.running && editId !== 'new') html += '<p class="muted small">No entries yet.</p>';
+  let day = '';
+  list.forEach(s => {
+    const a = new Date(s.start), b = new Date(s.end);
+    if (ymd(a) !== day) {
+      day = ymd(a);
+      const dt = list.filter(x => ymd(new Date(x.start)) === day);
+      html += `<div class="day"><span>${dayLabel(a)}</span><span>${hrs(dt.reduce((t, x) => t + x.chargedH, 0))}</span></div>`;
+    }
+    if (editId === s.id) { html += editorHTML(s); return; }
+    html += `<div class="entry" onclick="openEntry('${s.id}')">
+      <div class="t">${hhmm(a)}–${hhmm(b)}</div>
+      <div class="d">${!j ? `<div class="job">${esc((jobById(s.jobId) || {}).name || '')}</div>` : ''}<div>${esc(s.task)}</div>
+        ${s.notes ? `<div class="muted small">${esc(s.notes)}</div>` : ''}</div>
+      <div class="v">${hrs(s.chargedH)}<div class="muted small">${money(s.charge)}</div></div></div>`;
+  });
+  const r = data.running;
+  if (r && (!j || r.jobId === j.id)) {
+    const a = new Date(r.start);
+    if (ymd(a) !== day) html += `<div class="day"><span>${dayLabel(a)}</span><span></span></div>`;
+    html += `<div class="entry live"><div class="t">${hhmm(a)}–now</div>
+      <div class="d">${!j ? `<div class="job">${esc((jobById(r.jobId) || {}).name || '')}</div>` : ''}<div>${esc(r.task)}</div></div>
+      <div class="v" id="liveDur">${r.pauseStart ? 'paused' : 'running'}</div></div>`;
+  }
+  if (editId === 'new') html += editorHTML(null);
+  return html;
+}
+
+function openEntry(id) { editId = id; splitOpen = false; renderPanel(); }
+function newEntry() { editId = 'new'; splitOpen = false; if (!isDesk() && tab !== 'entries') setTab('entries'); renderPanel(); }
+function cancelEdit() { editId = null; splitOpen = false; renderPanel(); }
+
+function editorHTML(s) {
+  const jobs = data.jobs.slice().sort((a, b) => (a.status === 'Complete') - (b.status === 'Complete') || a.name.localeCompare(b.name));
+  if (!jobs.length) return `<div class="editor"><p class="muted">Create a job first.</p><button class="sm" onclick="cancelEdit()">Close</button></div>`;
+  const jobId = s ? s.jobId : (sel || pick.jobId || jobs[0].id);
+  const job = jobById(jobId) || jobs[0];
+  const now = new Date();
+  const start = s ? new Date(s.start) : new Date(now.getTime() - 3600000), end = s ? new Date(s.end) : now;
+  const mid = new Date((start.getTime() + end.getTime()) / 2);
+  return `<div class="editor" id="editor">
+    <div class="row">
+      <div><label>Job</label><select id="eJob" onchange="eJobChanged()">${jobs.map(x => `<option value="${esc(x.id)}" ${x.id === job.id ? 'selected' : ''}>${esc(x.name)}${x.status === 'Complete' ? ' (complete)' : ''}</option>`).join('')}</select></div>
+      <div><label>Task</label><select id="eTask" onchange="eTaskChanged()">${taskOptions(job.id, s ? s.task : (tasksFor(job.id)[0] || '__new'))}</select></div>
+    </div>
+    <input id="eNew" class="hidden" style="margin-top:8px" placeholder="New task">
+    <div class="row">
+      <div><label>Date</label><input id="eDate" type="date" value="${ymd(start)}" oninput="eCalc()"></div>
+      <div><label>Start</label><input id="eStart" type="time" value="${hhmm(start)}" oninput="eCalc()"></div>
+      <div><label>End</label><input id="eEnd" type="time" value="${hhmm(end)}" oninput="eCalc()"></div>
+    </div>
+    <div class="row">
+      <div><label>Paused (min)</label><input id="ePaused" type="number" min="0" step="1" inputmode="numeric" value="${s ? Math.round(s.pausedMin) : 0}" oninput="eCalc()"></div>
+      <div><label>Rate (£/h)</label><input id="eRate" type="number" step="0.01" inputmode="decimal" value="${s ? s.rate : job.rate}" oninput="eCalc()"></div>
+    </div>
+    <label>Notes</label><textarea id="eNotes">${esc(s ? s.notes : '')}</textarea>
+    <div class="calc" id="eCalc"></div>
+    ${s && splitOpen ? `<div class="splitbox">
+      <div class="row">
+        <div><label>Split at</label><input id="sAt" type="time" value="${hhmm(mid)}"></div>
+        <div><label>Task after split</label><select id="sTask" onchange="$('#sNew').classList.toggle('hidden', this.value!=='__new')">${taskOptions(job.id, '__new')}</select></div>
+      </div>
+      <input id="sNew" style="margin-top:8px" placeholder="New task">
+      <div class="actions"><button class="go sm" onclick="doSplit()">Split entry</button>
+        <button class="ghost sm" onclick="splitOpen=false;renderPanel()">Cancel split</button></div>
+      <div class="muted small">The first part keeps this entry's task. Paused time is shared in proportion.</div>
+    </div>` : ''}
+    <div class="actions">
+      ${s ? `<button class="danger sm" onclick="deleteEntry('${s.id}')">Delete</button>
+             ${splitOpen ? '' : `<button class="sm" onclick="splitOpen=true;renderPanel()">Split…</button>`}` : ''}
+      <span class="spacer"></span>
+      <button class="sm" onclick="cancelEdit()">Cancel</button>
+      <button class="primary sm" onclick="saveEntry()">Save</button>
+    </div>
   </div>`;
 }
 
-function saveSettings() {
-  cfg = { url: $('#sUrl').value.trim(), key: $('#sKey').value.trim() }; ls.set('tr_cfg', cfg);
-  const rate = parseFloat($('#sRate').value);
-  if (!isNaN(rate) && rate !== data.defaultRate) commit({ type: 'setDefaultRate', rate });
-  else sync();
-  toast('Settings saved');
+function eJobChanged() {
+  const j = jobById($('#eJob').value);
+  $('#eTask').innerHTML = taskOptions(j.id, tasksFor(j.id)[0] || '__new');
+  if (editId === 'new') $('#eRate').value = j.rate;
+  eTaskChanged(); eCalc();
+}
+function eTaskChanged() { $('#eNew').classList.toggle('hidden', $('#eTask').value !== '__new'); }
+
+function eTimes() {
+  const date = $('#eDate').value, st = $('#eStart').value, en = $('#eEnd').value;
+  if (!date || !st || !en) return null;
+  const [y, mo, d] = date.split('-').map(Number);
+  const [sh, sm] = st.split(':').map(Number), [eh, em] = en.split(':').map(Number);
+  let start = new Date(y, mo - 1, d, sh, sm), end = new Date(y, mo - 1, d, eh, em);
+  if (end <= start) end.setDate(end.getDate() + 1);           // runs past midnight
+  const orig = editId !== 'new' && data.sessions.find(x => x.id === editId);
+  if (orig) {                                                  // keep exact seconds if unchanged
+    const os = new Date(orig.start), oe = new Date(orig.end);
+    if (ymd(os) === date && hhmm(os) === st) start = os;
+    if (hhmm(oe) === en && Math.abs(oe - end) < 60000) end = oe;
+  }
+  return { start, end };
+}
+
+function eCalc() {
+  const t = eTimes(); if (!t) return;
+  const d = derive({ start: t.start, end: t.end, pausedMin: parseFloat($('#ePaused').value) || 0, rate: parseFloat($('#eRate').value) || 0 });
+  $('#eCalc').innerHTML = `Worked ${hm(d.workedMin)} → charged <b>${hrs(d.chargedH)}</b> = <b>${money(d.charge)}</b>`;
+}
+
+function eSession() {
+  const t = eTimes(); if (!t) { toast('Enter the date and times'); return null; }
+  return { id: editId === 'new' ? uid('s') : editId, jobId: $('#eJob').value, task: readTask('#eTask', '#eNew'),
+    start: t.start.toISOString(), end: t.end.toISOString(), pausedMin: parseFloat($('#ePaused').value) || 0,
+    rate: parseFloat($('#eRate').value) || 0, notes: $('#eNotes').value.trim() };
+}
+
+function saveEntry() {
+  const s = eSession(); if (!s) return;
+  editId = null; splitOpen = false;
+  commit({ type: 'saveSession', session: s });
+  toast('Saved');
+}
+
+function doSplit() {
+  const s = eSession(); if (!s) return;
+  const a = new Date(s.start), b = new Date(s.end);
+  const [h, m] = $('#sAt').value.split(':').map(Number);
+  let at = new Date(a); at.setHours(h, m, 0, 0);
+  if (at <= a) at.setDate(at.getDate() + 1);
+  if (!(at > a && at < b)) return toast('Split time must be between ' + hhmm(a) + ' and ' + hhmm(b));
+  const d1 = at - a, d2 = b - at, p = s.pausedMin || 0;
+  const p1 = Math.round(p * d1 / (d1 + d2) * 10) / 10;
+  const first = Object.assign({}, s, { end: at.toISOString(), pausedMin: p1 });
+  const second = Object.assign({}, s, { id: uid('s'), task: readTask('#sTask', '#sNew'), start: at.toISOString(),
+    pausedMin: Math.round((p - p1) * 10) / 10, notes: '' });
+  editId = null; splitOpen = false;
+  commit({ type: 'saveSession', session: first }, { type: 'saveSession', session: second });
+  toast('Split at ' + hhmm(at));
+}
+
+function deleteEntry(id) {
+  if (!confirm('Delete this entry? This cannot be undone.')) return;
+  editId = null;
+  commit({ type: 'deleteSession', id });
 }
 
 // ---------- modals ----------
 function openModal(html) { $('#modal').innerHTML = `<div class="modal-bg"><div class="modal">${html}</div></div>`; }
-function closeModal() { $('#modal').innerHTML = ''; render(); }
+function closeModal() { $('#modal').innerHTML = ''; render(true); }
 
 function jobForm(id) {
   const j = id ? jobById(id) : { name: '', client: '', rate: data.defaultRate, status: 'Active', notes: '' };
@@ -461,12 +705,12 @@ function jobForm(id) {
       <div><label>Status</label><select id="jStatus"><option ${j.status !== 'Complete' ? 'selected' : ''}>Active</option><option ${j.status === 'Complete' ? 'selected' : ''}>Complete</option></select></div>
     </div>
     <label>Notes</label><textarea id="jNotes">${esc(j.notes)}</textarea>
-    ${id && n ? '<p class="muted small">Changing the rate applies to new sessions only. Existing sessions keep the rate they were recorded at.</p>' : ''}
+    ${id && n ? '<p class="muted small">A new rate applies to new entries only. Existing entries keep the rate they were recorded at.</p>' : ''}
     <div class="actions">
-      ${id ? `<button class="danger" onclick="deleteJob('${id}')">Delete</button>` : ''}
+      ${id ? `<button class="danger sm" onclick="deleteJob('${id}')">Delete</button>` : ''}
       <span class="spacer"></span>
-      <button onclick="closeModal()">Cancel</button>
-      <button class="primary" onclick="saveJob(${id ? `'${id}'` : ''})">Save</button>
+      <button class="sm" onclick="closeModal()">Cancel</button>
+      <button class="primary sm" onclick="saveJob(${id ? `'${id}'` : ''})">Save</button>
     </div>`);
   if (!id) $('#jName').focus();
 }
@@ -478,123 +722,56 @@ function saveJob(id) {
     status: $('#jStatus').value, notes: $('#jNotes').value.trim() };
   $('#modal').innerHTML = '';
   commit({ type: 'saveJob', job });
-  if (!id) { pick = { jobId: job.id, task: '', newTask: '' }; ls.set('tr_pick', pick); go('job:' + job.id); }
+  if (!id) selectJob(job.id);
 }
 
 function deleteJob(id) {
   const j = jobById(id), n = totals(id).n;
-  if (!confirm(`Delete "${j.name}"${n ? ' and its ' + n + ' session(s)' : ''}? This cannot be undone.\n\nTo keep the record, cancel and mark the job Complete instead.`)) return;
+  if (!confirm(`Delete "${j.name}"${n ? ' and its ' + n + ' entries' : ''}? This cannot be undone.\n\nTo keep the record, cancel and mark the job Complete instead.`)) return;
   $('#modal').innerHTML = '';
+  if (sel === id) { sel = ''; ls.set('tr_sel', ''); }
   commit({ type: 'deleteJob', id });
-  go('jobs');
 }
 
-let editing = null;
-function sessionForm(id, jobId) {
-  const s = id ? data.sessions.find(x => x.id === id) : null;
-  const now = new Date();
-  const jobs = data.jobs.slice().sort((a, b) => (a.status === 'Complete') - (b.status === 'Complete') || a.name.localeCompare(b.name));
-  if (!jobs.length) { toast('Create a job first'); return jobForm(); }
-  jobId = s ? s.jobId : (jobId || (view.startsWith('job:') ? view.slice(4) : '') || pick.jobId || jobs[0].id);
-  const job = jobById(jobId) || jobs[0];
-  const start = s ? new Date(s.start) : new Date(now.getTime() - 60 * 60000);
-  const end = s ? new Date(s.end) : now;
-  editing = s ? { id: s.id, start: s.start, end: s.end } : null;
-  openModal(`<h2>${s ? 'Edit time' : 'Add time'}</h2>
-    <label>Job</label><select id="mJob" onchange="mJobChanged()">${jobs.map(j => `<option value="${esc(j.id)}" ${j.id === job.id ? 'selected' : ''}>${esc(j.name)}${j.status === 'Complete' ? ' (complete)' : ''}</option>`).join('')}</select>
-    <label>Task</label><select id="mTask" onchange="mTaskChanged()">${taskOptions(job.id, s ? s.task : (tasksFor(job.id)[0] || ''))}</select>
-    <input id="mNew" class="hidden" style="margin-top:8px" placeholder="New task">
-    <label>Date</label><input id="mDate" type="date" value="${ymd(start)}" oninput="mCalc()">
-    <div class="row">
-      <div><label>Start</label><input id="mStart" type="time" value="${hhmm(start)}" oninput="mCalc()"></div>
-      <div><label>End</label><input id="mEnd" type="time" value="${hhmm(end)}" oninput="mCalc()"></div>
-    </div>
-    <div class="row">
-      <div><label>Paused (min)</label><input id="mPaused" type="number" min="0" step="1" inputmode="numeric" value="${s ? Math.round(s.pausedMin) : 0}" oninput="mCalc()"></div>
-      <div><label>Rate (£/h)</label><input id="mRate" type="number" step="0.01" inputmode="decimal" value="${s ? s.rate : job.rate}" oninput="mCalc()"></div>
-    </div>
-    <label>Notes</label><textarea id="mNotes">${esc(s ? s.notes : '')}</textarea>
-    <div class="calc" id="mCalc"></div>
-    <div class="actions">
-      ${s ? `<button class="danger" onclick="deleteSession('${s.id}')">Delete</button>` : ''}
-      <span class="spacer"></span>
-      <button onclick="closeModal()">Cancel</button>
-      <button class="primary" onclick="saveSession()">Save</button>
-    </div>`);
-  mTaskChanged(); mCalc();
+function settingsForm() {
+  openModal(`<h2>Settings</h2>
+    <label>Apps Script web app URL</label><input id="sUrl" value="${esc(cfg.url)}" placeholder="https://script.google.com/macros/s/…/exec">
+    <label>Key</label><input id="sKey" value="${esc(cfg.key)}" autocomplete="off">
+    <label>Default hourly rate for new jobs (£)</label><input id="sRate" type="number" step="0.01" inputmode="decimal" value="${data.defaultRate}">
+    ${queue.length ? `<p class="small" style="color:var(--warn)">${queue.length} change(s) waiting to be sent.</p>` : ''}
+    <p class="muted small">Data is kept in the <a style="color:var(--accent-ink)" href="${SHEET_URL}" target="_blank">Time Recorder sheet</a> on Google Drive.
+      Each entry is charged in 15-minute blocks, rounded up. Paused time is not counted.</p>
+    <div class="actions"><button class="sm" onclick="closeModal();sync()">Sync now</button><span class="spacer"></span>
+      <button class="sm" onclick="closeModal()">Cancel</button><button class="primary sm" onclick="saveSettings()">Save</button></div>`);
 }
 
-function mJobChanged() {
-  const j = jobById($('#mJob').value);
-  $('#mTask').innerHTML = taskOptions(j.id, tasksFor(j.id)[0] || '');
-  if (!editing) $('#mRate').value = j.rate;
-  mTaskChanged(); mCalc();
-}
-function mTaskChanged() { $('#mNew').classList.toggle('hidden', $('#mTask').value !== '__new'); }
-
-function mTimes() {
-  const date = $('#mDate').value, st = $('#mStart').value, en = $('#mEnd').value;
-  if (!date || !st || !en) return null;
-  const [y, mo, d] = date.split('-').map(Number);
-  const [sh, sm] = st.split(':').map(Number), [eh, em] = en.split(':').map(Number);
-  let start = new Date(y, mo - 1, d, sh, sm), end = new Date(y, mo - 1, d, eh, em);
-  if (end <= start) end.setDate(end.getDate() + 1);   // runs past midnight
-  // keep the exact recorded seconds if the times were not changed
-  if (editing) {
-    const os = new Date(editing.start), oe = new Date(editing.end);
-    if (ymd(os) === date && hhmm(os) === st) start = os;
-    if (hhmm(oe) === en && Math.abs(oe - end) < 60000) end = oe;
-  }
-  return { start, end };
-}
-
-function mCalc() {
-  const t = mTimes(); if (!t) return;
-  const d = derive({ start: t.start, end: t.end, pausedMin: parseFloat($('#mPaused').value) || 0, rate: parseFloat($('#mRate').value) || 0 });
-  $('#mCalc').innerHTML = `Worked ${hm(d.workedMin)} → charged <b>${hrs(d.chargedH)}</b> = <b>${money(d.charge)}</b>`;
-}
-
-function saveSession() {
-  const t = mTimes(); if (!t) return toast('Enter the date and times');
-  let task = $('#mTask').value === '__new' ? $('#mNew').value.trim() : $('#mTask').value;
-  if (!task) task = 'General';
-  const s = {
-    id: editing ? editing.id : uid('s'), jobId: $('#mJob').value, task,
-    start: t.start.toISOString(), end: t.end.toISOString(),
-    pausedMin: parseFloat($('#mPaused').value) || 0, rate: parseFloat($('#mRate').value) || 0,
-    notes: $('#mNotes').value.trim()
-  };
+function saveSettings() {
+  cfg = { url: $('#sUrl').value.trim(), key: $('#sKey').value.trim() }; ls.set('tr_cfg', cfg);
+  const rate = parseFloat($('#sRate').value);
   $('#modal').innerHTML = '';
-  commit({ type: 'saveSession', session: s });
-  toast('Saved');
-}
-
-function deleteSession(id) {
-  if (!confirm('Delete this session? This cannot be undone.')) return;
-  $('#modal').innerHTML = '';
-  commit({ type: 'deleteSession', id });
+  if (!isNaN(rate) && rate !== data.defaultRate) commit({ type: 'setDefaultRate', rate }); else { render(true); sync(); }
+  toast('Settings saved');
 }
 
 // ---------- clock ----------
 function tick() {
-  const r = data.running, c = $('#clock'); if (!r || !c) return;
-  c.textContent = fmtClock(elapsedMs(r));
+  const r = data.running; if (!r) return;
+  const c = $('#clock'); if (c) c.textContent = fmtClock(elapsedMs(r));
   const pausedMin = Math.round(((r.pausedMs || 0) + (r.pauseStart ? Date.now() - new Date(r.pauseStart) : 0)) / 60000);
   const sub = $('#clockSub');
   if (sub) sub.textContent = r.pauseStart ? 'Paused since ' + hhmm(new Date(r.pauseStart)) + (pausedMin ? ' · ' + pausedMin + ' min paused in total' : '')
-    : (pausedMin ? pausedMin + ' min paused' : '');
+    : (pausedMin ? pausedMin + ' min paused' : ' ');
+  const live = $('#liveDur'); if (live) live.textContent = r.pauseStart ? 'paused' : hm(elapsedMs(r) / 60000);
 }
 setInterval(tick, 1000);
 
 // ---------- start ----------
-document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
-  if (b.dataset.nav === 'add') return sessionForm();
-  go(b.dataset.nav);
-});
 document.addEventListener('visibilitychange', () => { if (!document.hidden) sync(); });
 window.addEventListener('online', sync);
-if (!cfg.url || !cfg.key) view = 'settings';
-render();
+let wasDesk = isDesk();
+window.addEventListener('resize', () => { if (isDesk() !== wasDesk) { wasDesk = isDesk(); render(true); } });
+setTab(tab);
+if (!cfg.url || !cfg.key) settingsForm();
 sync();
 </script>
 </body>
